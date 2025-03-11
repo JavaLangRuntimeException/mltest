@@ -1,0 +1,9 @@
+Flask
+boto3
+deepface
+SQLAlchemy
+pymysql
+scikit-learn
+joblib
+pandas
+tf-keras

@@ -1,0 +1,96 @@
+# =====================================
+# Next.js / Node.js プロジェクト (front/)
+# =====================================
+front/node_modules/
+front/.next/
+front/out/
+front/build/
+front/dist/
+
+# 環境変数ファイル（機密情報を含むため）
+front/.env
+front/.env.local
+front/.env.development.local
+front/.env.test.local
+front/.env.production.local
+
+# ログファイル
+front/npm-debug.log*
+front/yarn-debug.log*
+front/yarn-error.log*
+
+# エディタ設定など
+front/.vscode/
+
+
+# =====================================
+# Go プロジェクト (go/)
+# =====================================
+# コンパイル済みバイナリ
+go/*.exe
+go/*.exe~
+go/*.dll
+go/*.so
+go/*.dylib
+
+# Go のテスト成果物
+go/*.test
+
+# ビルドディレクトリ
+go/bin/
+go/build/
+
+# vendor フォルダ（必要に応じて管理する場合はコメントアウト）
+go/vendor/
+
+
+# =====================================
+# Python (Flask) プロジェクト (python/)
+# =====================================
+# Python のバイトコンパイルファイル
+python/__pycache__/
+python/*.py[cod]
+python/*$py.class
+
+# 拡張モジュール用（Cコンパイル済みなど）
+python/*.so
+
+# パッケージング/ディストリビューション用
+python/.Python
+python/build/
+python/develop-eggs/
+python/dist/
+python/downloads/
+python/eggs/
+python/.eggs/
+python/lib/
+python/lib64/
+python/parts/
+python/sdist/
+python/var/
+python/wheels/
+python/pip-wheel-metadata/
+python/*.egg-info/
+python/.installed.cfg
+python/*.egg
+
+# 仮想環境ディレクトリ
+python/.env
+python/.venv
+python/env/
+python/venv/
+python/ENV/
+python/env.bak/
+python/venv.bak/
+
+# テストやキャッシュ関連
+python/.cache/
+python/.pytest_cache/
+python/.mypy_cache/
+python/.dmypy.json
+
+# Jupyter Notebook のチェックポイント（必要な場合）
+python/.ipynb_checkpoints/
+
+# エディタ設定など
+python/.vscode/

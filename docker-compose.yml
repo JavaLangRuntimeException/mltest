@@ -1,0 +1,103 @@
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+    networks:
+      - sample-app-network
+
+  go:
+    build:
+      context: ./go
+      dockerfile: Dockerfile
+    container_name: go
+    environment:
+      MYSQL_DSN: "user:password@tcp(mysql:3306)/mydb"
+      PYTHON_SERVICE_URL: "http://python:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      python:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    networks:
+      - sample-app-network
+
+  python:
+    build:
+      context: ./python
+      dockerfile: Dockerfile
+    container_name: python
+    environment:
+      RDS_DSN: "mysql+pymysql://user:password@mysql:3306/mydb"
+      PORT: 8000
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_REGION: us-east-1
+      S3_ENDPOINT_URL: http://localstack:4566
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    networks:
+      - sample-app-network
+
+  localstack:
+    image: localstack/localstack
+    container_name: localstack
+    environment:
+      SERVICES: s3
+      DEFAULT_REGION: us-east-1
+      DATA_DIR: /var/lib/localstack
+    ports:
+      - "4566:4566"
+    volumes:
+      - localstack_data:/var/lib/localstack
+    healthcheck:
+      test: ["CMD", "curl", "-s", "http://localhost:4566/health"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    networks:
+      - sample-app-network
+
+  front:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    container_name: front
+    environment:
+      NEXT_PUBLIC_S3_ENDPOINT: "http://localstack:4566"
+      NEXT_PUBLIC_S3_BUCKET: "ml-test-bucket"
+      NEXT_PUBLIC_S3_REGION: "us-east-1"
+    depends_on:
+      localstack:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    networks:
+      - sample-app-network
+
+networks:
+  sample-app-network:
+
+volumes:
+  mysql_data:
+  localstack_data:
