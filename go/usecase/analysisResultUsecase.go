@@ -37,7 +37,7 @@ type PythonAnalysis struct {
 	Emotions        map[string]float64 `json:"emotions"`
 }
 
-// AnalyzeImage は Python サービスへ画像解析のリクエストを行い，解析結果を複数取得す
+// AnalyzeImage は Python サービスへ画像解析のリクエストを行い，解析結果を複数取得する
 func (u *AnalysisUsecase) AnalyzeImage(req *S3Request) ([]PythonAnalysis, error) {
 	payload, err := json.Marshal(req)
 	if err != nil {

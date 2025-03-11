@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// NewGormDB は GORM を利用して MySQL への接続を生成します.
+// NewGormDB は GORM を利用して MySQL への接続を生成
 func NewGormDB(dsn string) (*gorm.DB, error) {
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {

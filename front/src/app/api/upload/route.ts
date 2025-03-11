@@ -8,6 +8,7 @@ interface FormFile extends Blob {
 }
 
 // awslocal s3 mb s3://ml-test-bucket で作成済み
+// awslocal s3 ls s3://ml-test-bucket で確認する
 export async function POST(request: Request) {
     try {
         const formData = await request.formData();
