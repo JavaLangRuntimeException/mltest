@@ -96,4 +96,6 @@ python/.ipynb_checkpoints/
 # エディタ設定など
 python/.vscode/
 
+.idea
+
 
