@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# frontディレクトリ
+フロントエンドのファイルを格納するところです
 
-## Getting Started
-
-First, run the development server:
-
+## 実行方法
+フロントのみ(デザインしたい場合に使用してね)
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+バックやインフラも合わせて実行する方法
+```bash
+docker compose up
+```
+Dockerfileをいじった場合やフロントファイルを変更した場合は以下のコマンドで実行してね
+```bash
+docker compose up --build
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## ディレクトリ構成
+```
+.
+├── Dockerfile
+├── README.md
+├── eslint.config.mjs
+├── next-env.d.ts
+├── next.config.ts
+├── package-lock.json
+├── package.json
+├── postcss.config.mjs
+├── public
+│     ├── file.svg
+│     ├── globe.svg
+│     ├── next.svg
+│     ├── vercel.svg
+│     └── window.svg
+├── src
+│    ├── app
+│    │     ├── analyze // 分析APIを叩く & 分析結果と3Dモデルを表示するページ
+│    │     │     └── page.tsx
+│    │     ├── api
+│    │     │     ├── analyze // 分析結果を取得する(Go APIを叩く)ためのAPI
+│    │     │     │     └── route.ts
+│    │     │     ├── fbx // fbxファイルをS3(localstack)ダウンロードするためのAPI
+│    │     │     │     └── route.ts
+│    │     │     ├── uploadImage // 分析対象画像をS3(localstack)にアップロードするためのAPI
+│    │     │     │     └── route.ts
+│    │     │     └── uploadProduct // [ローカル用] 表示する3Dモデル(fbxファイル)をS3(localstack)にアップロードするためのAPI
+│    │     │         └── route.ts
+│    │     ├── globals.css
+│    │     ├── layout.tsx
+│    │     ├── page.tsx // メインページ-画像アップロード処理
+│    │     └── uploadProduct // [ローカル用]　3Dモデル(fbxファイル)をアップロードするページ
+│    │         └── page.tsx
+│    └── types
+│         └── three-fbxloader.d.ts // three.jsを使うための型定義ファイル
+└── tsconfig.json
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 注意点
+- ローカル開発時，コンテナを落とした場合S3(localstack)のバケット，画像，3Dモデルは全て消えます．毎回バケット作成や画像，3Dモデルのアップロードをし直す必要があります．
+  - 詳しくはリポジトリのルートのREADME.mdを参照してください．

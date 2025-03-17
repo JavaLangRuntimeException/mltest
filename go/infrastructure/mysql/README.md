@@ -1,0 +1,2 @@
+# infrastructure/mysql ディレクトリ
+MySQLとの接続を行うためのファイルを配置するディレクトリ．ここではGORMを使ってMySQLとの接続を行っている．

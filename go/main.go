@@ -1,11 +1,13 @@
 package main
 
 import (
+	"github.com/labstack/echo/v4/middleware"
 	"log"
 	"mltest/infrastructure/dao"
 	"mltest/infrastructure/mysql"
 	"mltest/interface"
 	"mltest/usecase"
+	"net/http"
 	"os"
 	"time"
 
@@ -27,6 +29,13 @@ func main() {
 
 	// Echo インスタンスを main で作成
 	e := echo.New()
+
+	// CORS ミドルウェア設定
+	// 以下では http://localhost:3000 からのアクセスを許可しています
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"http://localhost:3000"},
+		AllowMethods: []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete},
+	}))
 
 	// Echo ハンドラ初期化
 	newHandler := handler.NewHandler(analysisUC)

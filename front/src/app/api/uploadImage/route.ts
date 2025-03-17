@@ -7,8 +7,15 @@ interface FormFile extends Blob {
     readonly type: string;
 }
 
-// awslocal s3 mb s3://ml-test-bucket で作成済み
-// awslocal s3 ls s3://ml-test-bucket で確認する
+/**
+ * 画像をアップロードするAPI
+ * localstackに画像をアップロードする
+ * ルートページで使用される
+ *
+ * localで実行する場合、以下のコマンドでバケットを作成する
+ * awslocal s3 mb s3://ml-test-image-bucket で作成
+ * awslocal s3 ls s3://ml-test-image-bucket でファイルの存在確認
+ */
 export async function POST(request: Request) {
     try {
         const formData = await request.formData();
@@ -39,7 +46,7 @@ export async function POST(request: Request) {
             secretAccessKey: "test",
             region: process.env.NEXT_PUBLIC_S3_REGION || "ap-northeast-1",
         });
-        const bucket = process.env.NEXT_PUBLIC_S3_BUCKET || "my-bucket";
+        const bucket = process.env.NEXT_PUBLIC_S3_IMAGE_BUCKET || "ml-test-image-bucket";
 
         const params = {
             Bucket: bucket,

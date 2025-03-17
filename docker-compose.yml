@@ -27,7 +27,7 @@ services:
       dockerfile: Dockerfile
     container_name: go
     environment:
-      MYSQL_DSN: "user:password@tcp(mysql:3306)/mydb"
+      MYSQL_DSN: "user:password@tcp(mysql:3306)/mydb?charset=utf8mb4&parseTime=True&loc=Local"
       PYTHON_SERVICE_URL: "http://python:8000"
     depends_on:
       mysql:
@@ -85,8 +85,10 @@ services:
     container_name: front
     environment:
       NEXT_PUBLIC_S3_ENDPOINT: "http://localstack:4566"
-      NEXT_PUBLIC_S3_BUCKET: "ml-test-bucket"
+      NEXT_PUBLIC_S3_IMAGE_BUCKET: "ml-test-image-bucket"
+      NEXT_PUBLIC_S3_PRODUCT_BUCKET: "ml-test-product-bucket"
       NEXT_PUBLIC_S3_REGION: "us-east-1"
+      NEXT_PUBLIC_BACKEND_URL: "http://go:8080"
     depends_on:
       localstack:
         condition: service_healthy

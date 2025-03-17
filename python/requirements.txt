@@ -1,9 +1,11 @@
 Flask
 boto3
 deepface
-SQLAlchemy
-pymysql
+opencv-python
 scikit-learn
 joblib
 pandas
-tf-keras
+SQLAlchemy
+PyMySQL
+tf_keras
+numpy
