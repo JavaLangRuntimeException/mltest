@@ -9,21 +9,23 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Image data is required' }, { status: 400 });
         }
 
-        // バックエンドのURLを環境変数から取得（なければデフォルトで http://localhost:8080）
-        const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+        // Go サービスの URL を環境変数から取得（なければデフォルトで http://localhost:8081）
+        // ※ Go サービスの /detect エンドポイントに接続します。
+        const goServiceURL =
+            (process.env.NEXT_PUBLIC_GO_SERVICE_URL || "http://localhost:8080") + "/detect";
 
-        // Python 側の画像認識 API に POST リクエストを送信
-        const response = await fetch(backendURL, {
+        // Go サービスへ POST リクエストを送信
+        const response = await fetch(goServiceURL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ image })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image }),
         });
 
-        // バックエンドからのレスポンスをそのままフロントに返す
+        // Go サービスからのレスポンスをそのまま返却
         const data = await response.json();
-        return NextResponse.json(data, { status: response.status });
+        // フロント側では logo_detected の真偽値をチェックするので、
+        // そのキーを含めたレスポンスとして返します。
+        return NextResponse.json({ logo_detected: data.logo_detected }, { status: response.status });
     } catch (error: unknown) {
         if (error instanceof Error) {
             return NextResponse.json({ error: error.message }, { status: 500 });

@@ -130,12 +130,11 @@ def analyze_image():
 
     return jsonify(final_result), 200
 
-# テンプレートロゴ画像の読み込み（グレースケール）
+# テンプレート画像の読み込み（グレースケール）
 template = cv2.imread('./logo.png', cv2.IMREAD_GRAYSCALE)
 if template is None:
     print("テンプレート画像の読み込みに失敗しました。パスを確認してください。")
     exit(1)
-w, h = template.shape[::-1]
 
 # テンプレートマッチングの閾値（必要に応じて調整）
 threshold = 0.8
@@ -147,7 +146,6 @@ def detect():
         return jsonify({"error": "No image data provided"}), 400
 
     image_data = data["image"]
-
     # Data URL の「data:image/jpeg;base64,」部分を除去
     header, encoded = image_data.split(",", 1)
     img_bytes = base64.b64decode(encoded)
@@ -163,11 +161,11 @@ def detect():
 
     # テンプレートマッチングの実施
     result = cv2.matchTemplate(gray_frame, template, cv2.TM_CCOEFF_NORMED)
-    _, max_val, _, max_loc = cv2.minMaxLoc(result)
+    _, max_val, _, _ = cv2.minMaxLoc(result)
     print("テンプレートマッチングの最大値:", max_val)
 
     detected = max_val > threshold
-    return jsonify({"detected": detected})
+    return jsonify({"detected": detected}), 200
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8000))

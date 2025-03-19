@@ -11,13 +11,13 @@ import (
 	"mltest/domain/repository"
 )
 
-// AnalysisUsecase は画像解析処理および結果永続化を実現するユースケース
+// AnalysisUsecase は画像解析処理および結果永続化を実現するユースケースです。
 type AnalysisUsecase struct {
 	repo             repository.AnalysisRepository
 	pythonServiceURL string
 }
 
-// NewAnalysisUsecase はコンストラクタ
+// NewAnalysisUsecase はコンストラクタです。
 func NewAnalysisUsecase(repo repository.AnalysisRepository, pythonServiceURL string) *AnalysisUsecase {
 	return &AnalysisUsecase{
 		repo:             repo,
@@ -25,26 +25,30 @@ func NewAnalysisUsecase(repo repository.AnalysisRepository, pythonServiceURL str
 	}
 }
 
-// S3Request は解析対象となる S3 オブジェクト情報
+// S3Request は解析対象となる S3 オブジェクト情報です。
 type S3Request struct {
 	Bucket   string `json:"bucket"`
 	ImageKey string `json:"image_key"`
 }
 
-// PythonAnalysis は Python サービスから返却される解析結果を表す
+// PythonAnalysis は Python サービスから返却される解析結果を表します。
 type PythonAnalysis struct {
 	DominantEmotion string             `json:"dominant_emotion"`
 	Emotions        map[string]float64 `json:"emotions"`
 }
 
-// AnalysisResult は、選択された商品情報と解析結果を格納するための構造体
+// AnalysisResult は、選択された商品情報と解析結果を格納するための構造体です。
 type AnalysisResult struct {
 	SelectedProduct string          `json:"selected_product"`
 	Analysis        *PythonAnalysis `json:"analysis"`
 }
 
-// AnalyzeImage は Python サービスへ画像解析のリクエストを行い，解析結果を取得する。
-// Python サービスが単一の aggregated result を返却するため、解析結果を AnalysisResult に格納して返すようにしています。
+// DetectResult は、Python サービスの /detect エンドポイントから返るロゴ検出結果を表します。
+type DetectResult struct {
+	LogoDetected bool `json:"logo_detected"`
+}
+
+// AnalyzeImage は Python サービスへ画像解析のリクエストを行い、解析結果を取得します。
 func (u *AnalysisUsecase) AnalyzeImage(req *S3Request) (AnalysisResult, error) {
 	payload, err := json.Marshal(req)
 	if err != nil {
@@ -61,39 +65,19 @@ func (u *AnalysisUsecase) AnalyzeImage(req *S3Request) (AnalysisResult, error) {
 		return AnalysisResult{}, errors.New("Pythonサービスのエラー: " + string(body))
 	}
 
-	// Python サービスが単一の aggregated result を返却するため、そのままデコード
 	var analysis PythonAnalysis
 	if err := json.NewDecoder(resp.Body).Decode(&analysis); err != nil {
 		return AnalysisResult{}, err
 	}
 
-	// 解析結果に基づいて選択された商品を決定
-	var result AnalysisResult
-	// 解析結果のポインタをセットすることで、ハンドラ側で参照できるようにする
-	result.Analysis = &analysis
-	result.SelectedProduct = "product1"
-
-	//switch analysis.DominantEmotion {
-	//case "angry":
-	//	result.SelectedProduct = "product1"
-	//case "disgust":
-	//	result.SelectedProduct = "product2"
-	//case "fear":
-	//	result.SelectedProduct = "product3"
-	//case "happy":
-	//	result.SelectedProduct = "product4"
-	//case "neutral":
-	//	result.SelectedProduct = "product5"
-	//case "sad":
-	//	result.SelectedProduct = "product6"
-	//default:
-	//	return AnalysisResult{}, errors.New("Unknown emotion")
-	//}
-
+	result := AnalysisResult{
+		Analysis:        &analysis,
+		SelectedProduct: "product1",
+	}
 	return result, nil
 }
 
-// SaveAnalysisResult は、S3リクエストと Python からの解析結果（単一）をデータベースへ保存する
+// SaveAnalysisResult は、S3 リクエストと Python からの解析結果（単一）をデータベースへ保存します。
 func (u *AnalysisUsecase) SaveAnalysisResult(req *S3Request, analysis PythonAnalysis) error {
 	result := &model.AnalysisResult{
 		Bucket:          req.Bucket,
@@ -113,7 +97,34 @@ func (u *AnalysisUsecase) SaveAnalysisResult(req *S3Request, analysis PythonAnal
 	return nil
 }
 
-// GetAnalysisResults は、保存された解析結果一覧を取得する
+// GetAnalysisResults は、保存された解析結果一覧を取得します。
 func (u *AnalysisUsecase) GetAnalysisResults() ([]*model.AnalysisResult, error) {
 	return u.repo.GetAll()
+}
+
+// DetectLogo は、与えられた画像データを Python サービスの /detect エンドポイントへ送信し
+// ロゴ検出結果を取得します。
+func (u *AnalysisUsecase) DetectLogo(image string) (DetectResult, error) {
+	payload, err := json.Marshal(map[string]string{"image": image})
+	if err != nil {
+		return DetectResult{}, err
+	}
+	// Python サービスの /detect エンドポイントへ接続する
+	url := u.pythonServiceURL + "/detect"
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(payload))
+	if err != nil {
+		return DetectResult{}, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return DetectResult{}, errors.New("Pythonサービスのエラー: " + string(body))
+	}
+
+	var result DetectResult
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return DetectResult{}, err
+	}
+	return result, nil
 }

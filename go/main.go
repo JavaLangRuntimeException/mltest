@@ -1,17 +1,18 @@
 package main
 
 import (
-	"github.com/labstack/echo/v4/middleware"
 	"log"
-	"mltest/infrastructure/dao"
-	"mltest/infrastructure/mysql"
-	"mltest/interface"
-	"mltest/usecase"
 	"net/http"
 	"os"
 	"time"
 
+	"mltest/infrastructure/dao"
+	"mltest/infrastructure/mysql"
+	"mltest/interface"
+	"mltest/usecase"
+
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
@@ -24,25 +25,25 @@ func main() {
 	// リポジトリ初期化 (GORM を使った実装)
 	analysisRepo := dao.NewAnalysisResultDao(db)
 
-	// ユースケース初期化 (PYTHON_SERVICE_URL は Python サービスの URL)
+	// ユースケース初期化 (PYTHON_SERVICE_URL は Python サービスの URL、例: http://localhost:8080)
 	analysisUC := usecase.NewAnalysisUsecase(analysisRepo, os.Getenv("PYTHON_SERVICE_URL"))
 
-	// Echo インスタンスを main で作成
+	// Echo インスタンスを生成
 	e := echo.New()
 
-	// CORS ミドルウェア設定
-	// 以下では http://localhost:3000 からのアクセスを許可しています
+	// CORS ミドルウェア設定 (例: http://localhost:3000 からのアクセスを許可)
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"http://localhost:3000"},
 		AllowMethods: []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete},
 	}))
 
-	// Echo ハンドラ初期化
+	// ハンドラ初期化
 	newHandler := handler.NewHandler(analysisUC)
 
-	// ルーティング設定（main.go で直接設定）
+	// ルーティング設定
 	e.POST("/analyze", newHandler.HandleAnalyze)
 	e.GET("/results", newHandler.HandleGetResults)
+	e.POST("/detect", newHandler.HandleDetectLogo)
 
 	// サーバ設定 (タイムアウトなど)
 	e.Server.ReadTimeout = 10 * time.Second

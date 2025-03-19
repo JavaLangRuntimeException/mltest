@@ -88,7 +88,7 @@ services:
       NEXT_PUBLIC_S3_IMAGE_BUCKET: "ml-test-image-bucket"
       NEXT_PUBLIC_S3_PRODUCT_BUCKET: "ml-test-product-bucket"
       NEXT_PUBLIC_S3_REGION: "us-east-1"
-      NEXT_PUBLIC_BACKEND_URL: "http://go:8080"
+      NEXT_PUBLIC_BACKEND_URL: "http://localhost:8080"
     depends_on:
       localstack:
         condition: service_healthy
