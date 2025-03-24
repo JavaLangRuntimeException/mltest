@@ -26,7 +26,11 @@ export default function LogoDetectionPage() {
         const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
         camera.position.set(0, 200, 300);
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            preserveDrawingBuffer: true
+        });
+
         renderer.setSize(width, height);
         containerRef.current.appendChild(renderer.domElement);
 
@@ -79,15 +83,15 @@ export default function LogoDetectionPage() {
         // 2秒ごとにレンダラーの canvas から画像をキャプチャして /api/detect へ送信する
         const detectInterval = setInterval(async () => {
             const dataUrl = renderer.domElement.toDataURL("image/jpeg");
+            const base64Data = dataUrl.split(",")[1];
             try {
                 const response = await fetch("/api/detect", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ image: dataUrl }),
+                    body: JSON.stringify({ image: base64Data }),
                 });
                 const result = await response.json();
                 console.log("API 結果:", result);
-                // ロゴが検出された場合は /uploadImage へ遷移
                 if (result.logo_detected) {
                     router.push("/uploadImage");
                 }

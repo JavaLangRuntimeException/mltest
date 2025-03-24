@@ -38,6 +38,11 @@ services:
       - "8080:8080"
     networks:
       - sample-app-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
 
   python:
     build:
@@ -88,8 +93,14 @@ services:
       NEXT_PUBLIC_S3_IMAGE_BUCKET: "ml-test-image-bucket"
       NEXT_PUBLIC_S3_PRODUCT_BUCKET: "ml-test-product-bucket"
       NEXT_PUBLIC_S3_REGION: "us-east-1"
-      NEXT_PUBLIC_BACKEND_URL: "http://localhost:8080"
+      NEXT_PUBLIC_BACKEND_URL: "http://go:8080"
     depends_on:
+      mysql:
+        condition: service_healthy
+      go:
+        condition: service_started
+      python:
+        condition: service_started
       localstack:
         condition: service_healthy
     ports:

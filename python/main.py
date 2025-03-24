@@ -36,6 +36,50 @@ s3_client = boto3.client(
     aws_access_key_id=aws_access_key_id,
     aws_secret_access_key=aws_secret_access_key,
 )
+def get_red_contours(image):
+    """
+    BGR画像から赤い部分の輪郭を抽出する関数
+    """
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    lower_red1 = np.array([0, 70, 50])
+    upper_red1 = np.array([10, 255, 255])
+    lower_red2 = np.array([170, 70, 50])
+    upper_red2 = np.array([180, 255, 255])
+    mask1 = cv2.inRange(hsv, lower_red1, upper_red1)
+    mask2 = cv2.inRange(hsv, lower_red2, upper_red2)
+    red_mask = cv2.bitwise_or(mask1, mask2)
+
+    # モルフォロジー処理でノイズを除去
+    kernel = np.ones((3, 3), np.uint8)
+    red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_OPEN, kernel, iterations=1)
+    red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_CLOSE, kernel, iterations=1)
+
+    contours, _ = cv2.findContours(red_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # 面積が小さい輪郭は除外（ここでは50未満の面積を除く）
+    filtered_contours = [cnt for cnt in contours if cv2.contourArea(cnt) > 50]
+    return filtered_contours
+
+# --- テンプレート画像の読み込み ---
+# ロゴ画像はテンプレートマッチング用（グレースケール）と赤色部分の形状比較用（カラー）の両方で使用する
+template_gray = cv2.imread('./logo.png', cv2.IMREAD_GRAYSCALE)
+if template_gray is None:
+    logging.debug("テンプレート画像の読み込みに失敗しました。パスが正しいか確認してください。")
+    exit(1)
+
+template_color = cv2.imread('./logo.png', cv2.IMREAD_COLOR)
+if template_color is None:
+    logging.debug("テンプレート画像（カラー）の読み込みに失敗しました。パスが正しいか確認してください。")
+    exit(1)
+
+# テンプレート画像から赤い部分の輪郭を抽出（グローバル変数として保持）
+template_red_contours = get_red_contours(template_color)
+if not template_red_contours:
+    logging.debug("テンプレート画像から赤い部分の輪郭が抽出できませんでした。")
+
+# テンプレートマッチングの閾値（必要に応じて調整）
+tm_threshold = 0.4
+# 赤色領域の形状の類似度の閾値（1.0に近いほど高一致）
+red_threshold = 0.8
 
 @app.route('/', methods=['POST'])
 def analyze_image():
@@ -130,44 +174,63 @@ def analyze_image():
 
     return jsonify(final_result), 200
 
-# テンプレート画像の読み込み（グレースケール）
-template = cv2.imread('./logo.png', cv2.IMREAD_GRAYSCALE)
-if template is None:
-    print("テンプレート画像の読み込みに失敗しました。パスを確認してください。")
-    exit(1)
-
-# テンプレートマッチングの閾値（必要に応じて調整）
-threshold = 0.8
-
+# ロゴ検出と赤色部分の形状評価のエンドポイント
 @app.route("/detect", methods=["POST"])
 def detect():
-    data = request.get_json()
-    if "image" not in data:
+    data = request.get_json() or {}
+    image_data = data.get("image")
+    if not image_data:
         return jsonify({"error": "No image data provided"}), 400
 
-    image_data = data["image"]
-    # Data URL の「data:image/jpeg;base64,」部分を除去
-    header, encoded = image_data.split(",", 1)
-    img_bytes = base64.b64decode(encoded)
+    try:
+        # Base64文字列をデコードして画像に変換
+        img_bytes = base64.b64decode(image_data)
+        nparr = np.frombuffer(img_bytes, np.uint8)
+        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        if frame is None:
+            raise ValueError("Image decoding failed")
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
-    # 画像データを numpy array に変換
-    nparr = np.frombuffer(img_bytes, np.uint8)
-    frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-    if frame is None:
-        return jsonify({"error": "画像のデコードに失敗しました"}), 400
+    # ----- テンプレートマッチングによるロゴ検出 -----
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    result = cv2.matchTemplate(gray, template_gray, cv2.TM_CCOEFF_NORMED)
+    raw_max_val = cv2.minMaxLoc(result)[1]
+    logging.debug(f"Template matching raw_max_val: {raw_max_val}")
 
-    # グレースケールに変換
-    gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    # ロゴ候補として、まずはtemplate matchingの閾値をチェック
+    if raw_max_val > tm_threshold:
+        # ----- 赤色領域の形状比較 -----
+        # 入力画像から赤色部分の輪郭抽出
+        input_red_contours = get_red_contours(frame)
 
-    # テンプレートマッチングの実施
-    result = cv2.matchTemplate(gray_frame, template, cv2.TM_CCOEFF_NORMED)
-    _, max_val, _, _ = cv2.minMaxLoc(result)
-    print("テンプレートマッチングの最大値:", max_val)
+        best_score = None
+        if template_red_contours and input_red_contours:
+            # 単一のマッチングスコアを評価するため、各テンプレート輪郭と入力画像の輪郭間で最低の
+            # マッチングスコア（すなわち最も類似しているもの）を採用する
+            for temp_cnt in template_red_contours:
+                for inp_cnt in input_red_contours:
+                    score = cv2.matchShapes(temp_cnt, inp_cnt, cv2.CONTOURS_MATCH_I1, 0.0)
+                    if best_score is None or score < best_score:
+                        best_score = score
 
-    detected = max_val > threshold
-    return jsonify({"detected": detected}), 200
+        if best_score is not None:
+            red_shape_similarity = 1.0 / (1.0 + best_score)
+        else:
+            red_shape_similarity = 0.0
+
+        logging.debug(f"Red shape similarity: {red_shape_similarity}")
+
+        # 赤色領域の形状類似度が閾値以上ならロゴが検出されたとする
+        logo_detected = red_shape_similarity > red_threshold
+    # raw_max_valがtm_threshold以下なら赤色部分の評価はスキップし、ロゴは検出されない
+    else:
+        logo_detected = False
+
+    return jsonify({
+        "logo_detected": logo_detected
+    }), 200
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8000))
-    logging.info(f"Pythonサービス開始: ポート {port}")
     app.run(host='0.0.0.0', port=port)

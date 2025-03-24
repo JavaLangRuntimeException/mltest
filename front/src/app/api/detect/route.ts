@@ -2,18 +2,19 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
     try {
-        // フロント側から送信された JSON ボディを取得（例: { image: "data:image/jpeg;base64,..." }）
+        // フロント側から送信された JSON ボディを取得（例: { image: ... }）
         const body = await request.json();
         const { image } = body;
         if (!image) {
             return NextResponse.json({ error: 'Image data is required' }, { status: 400 });
         }
 
-        // Go サービスの URL を環境変数から取得（なければデフォルトで http://localhost:8081）
-        // ※ Go サービスの /detect エンドポイントに接続します。
+        // Go サービスの URL を環境変数から取得（なければデフォルトで http://localhost:8080）
+        // Go サービスの /detect エンドポイントに接続する
         const goServiceURL =
-            (process.env.NEXT_PUBLIC_GO_SERVICE_URL || "http://localhost:8080") + "/detect";
+            (process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080") + "/detect";
 
+        console.log(goServiceURL);
         // Go サービスへ POST リクエストを送信
         const response = await fetch(goServiceURL, {
             method: 'POST',
@@ -23,8 +24,7 @@ export async function POST(request: Request) {
 
         // Go サービスからのレスポンスをそのまま返却
         const data = await response.json();
-        // フロント側では logo_detected の真偽値をチェックするので、
-        // そのキーを含めたレスポンスとして返します。
+        // フロント側では logo_detected の真偽値をチェックするので，そのキーを含めたレスポンスとして返すようにする
         return NextResponse.json({ logo_detected: data.logo_detected }, { status: response.status });
     } catch (error: unknown) {
         if (error instanceof Error) {

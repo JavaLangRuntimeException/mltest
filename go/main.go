@@ -41,6 +41,9 @@ func main() {
 	newHandler := handler.NewHandler(analysisUC)
 
 	// ルーティング設定
+	e.GET("/health", func(c echo.Context) error {
+		return c.String(http.StatusOK, "OK")
+	})
 	e.POST("/analyze", newHandler.HandleAnalyze)
 	e.GET("/results", newHandler.HandleGetResults)
 	e.POST("/detect", newHandler.HandleDetectLogo)
