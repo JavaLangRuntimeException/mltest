@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, ChangeEvent, FormEvent } from "react";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
   const [file, setFile] = useState<File | null>(null);
   const [message, setMessage] = useState("");
+  const router = useRouter();
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -13,11 +15,9 @@ export default function HomePage() {
   };
 
   /**
-   * imageファイルアップロード処理をするコンポーネント
-   *
-   * aws s3 にimageをアップロードする
-   * ローカル環境ではlocalstackを使用しているのでバケットを作成してから実行して欲しいです
-   * awslocal s3 mb s3://ml-test-image-bucket で作成
+   * imageファイルアップロード処理
+   * aws s3 に image をアップロードします．
+   * ローカル環境の場合，awslocal s3 mb s3://ml-test-image-bucket でバケットを作成してから実行してください
    */
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -33,10 +33,13 @@ export default function HomePage() {
       method: "POST",
       body: formData,
     });
+
     const data = await res.json();
 
     if (res.ok) {
       setMessage("アップロード成功: " + JSON.stringify(data));
+      // 画像アップロード成功後，ファイル名をクエリパラメータとして/analyzeへ遷移する
+      router.push(`/analyze?image=${encodeURIComponent(file.name)}`);
     } else {
       setMessage("アップロード失敗: " + JSON.stringify(data));
     }
@@ -45,11 +48,9 @@ export default function HomePage() {
   return (
       <main style={{ padding: "2rem" }}>
         <h1>S3 image Upload</h1>
-        <p>ここは画像アップロードページです．解析する画像をアップロードしてください</p>
-        <p>ローカル環境ではlocalstackに awslocal s3 mb s3://ml-test-image-bucket で作成してからuploadしてください</p>
+        <p>画像アップロードページです．解析する画像を選んでください。</p>
         <p>
-          <a href="/analyze">解析実行ページ</a>
-          <a href="/uploadProduct">（ローカル専用）3Dモデル(fbx)アップロードページ</a>
+          ローカル環境の場合は、awslocal s3 mb s3://ml-test-image-bucket でバケットを作成してからアップロードしてください
         </p>
         <form onSubmit={handleSubmit}>
           <input type="file" onChange={handleFileChange} />

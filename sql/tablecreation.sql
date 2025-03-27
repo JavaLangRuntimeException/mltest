@@ -1,4 +1,4 @@
--- 解析結果（各顔ごとの基本情報）
+-- 解析結果（試行ごとの基本情報）
 CREATE TABLE analysis_results (
                                   id INT AUTO_INCREMENT PRIMARY KEY,
                                   bucket VARCHAR(255) NOT NULL,

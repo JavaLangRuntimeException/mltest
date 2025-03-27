@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import * as THREE from "three";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 
@@ -25,11 +26,9 @@ interface AnalysisResult {
 /**
  * ModelViewer コンポーネント
  *
- * /api/analyze で取得したGo APIの解析結果の selected_product（FBX ファイル名）を元に、
+ * 解析結果の selected_product (FBX ファイル名) をもとに，
  * Next.js API Route (/api/fbx) から FBX ファイルを取得し，
- * Webカメラの映像を背景として Three.js で FBX モデルを表示
- * 他にも解析結果の emotion も表示する
- * (Go 側ではどんな表情でも product1 を返すようにしている)
+ * Webカメラ映像を背景とする Three.js で3Dモデルを表示します．
  */
 const ModelViewer: React.FC<{ product: string }> = ({ product }) => {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -43,9 +42,9 @@ const ModelViewer: React.FC<{ product: string }> = ({ product }) => {
         let videoStream: MediaStream | null = null;
         let videoElement: HTMLVideoElement | null = null;
 
-        // シーン、カメラ、レンダラーを生成
+        // シーン、カメラ、レンダラーの生成
         const scene = new THREE.Scene();
-        // 初期背景はダミーの色（後ほどビデオテクスチャで上書き）
+        // 初期背景はダミーの色（以降ビデオテクスチャで上書き）
         scene.background = new THREE.Color(0x000000);
 
         const width = containerRef.current.clientWidth;
@@ -57,21 +56,21 @@ const ModelViewer: React.FC<{ product: string }> = ({ product }) => {
         renderer.setSize(width, height);
         containerRef.current.appendChild(renderer.domElement);
 
-        // 環境光と方向光を追加
+        // 環境光と方向光の追加
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
         scene.add(ambientLight);
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
         directionalLight.position.set(0, 1, 1);
         scene.add(directionalLight);
 
-        // 内蔵カメラ（Webカメラ）を起動して映像を背景に設定する．現状はパソコンのインカメで動く
+        // Webカメラの映像を背景に設定（PCの内蔵カメラで動作）
         navigator.mediaDevices
             .getUserMedia({ video: true })
             .then((stream) => {
                 videoStream = stream;
                 videoElement = document.createElement("video");
                 videoElement.srcObject = stream;
-                videoElement.muted = true; // 自動再生時にミュートしておく
+                videoElement.muted = true; // 自動再生時にミュート
                 videoElement.play();
                 const videoTexture = new THREE.VideoTexture(videoElement);
                 videoTexture.minFilter = THREE.LinearFilter;
@@ -159,28 +158,26 @@ const ModelViewer: React.FC<{ product: string }> = ({ product }) => {
     );
 };
 
-const AnalyzePage: React.FC = () => {
-    // bucket の初期値を "ml-test-image-bucket" に設定
-    const [bucket, setBucket] = useState<string>("ml-test-image-bucket");
-    const [imageKey, setImageKey] = useState<string>("image.jpeg");
+// AnalyzePage 内で searchParams を使用する部分を別コンポーネントに切り出す
+function AnalyzePageContent() {
+    const searchParams = useSearchParams();
+    // クエリパラメータ "image" から画像名を取得（存在しない場合は "image.jpeg" をデフォルト値とする）
+    const imageKey = searchParams.get("image") || "image.jpeg";
     const [result, setResult] = useState<AnalysisResult | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
 
-    const handleSubmit = async (
-        e: React.FormEvent<HTMLFormElement>
-    ): Promise<void> => {
-        e.preventDefault();
+    const handleStart = async (): Promise<void> => {
         setError(null);
         setResult(null);
         setLoading(true);
 
         try {
-            // 解析リクエストは Next.js API Route (/api/analyze) 経由で送信
+            // 固定の bucket と画像名 (imageKey) を使用して解析リクエストを送信
             const response = await fetch("/api/analyze", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ bucket, image_key: imageKey }),
+                body: JSON.stringify({ bucket: "ml-test-image-bucket", image_key: imageKey }),
             });
 
             if (!response.ok) {
@@ -205,39 +202,11 @@ const AnalyzePage: React.FC = () => {
 
     return (
         <div style={{ margin: "20px", fontFamily: "sans-serif" }}>
-            <h1>GoのAnalyze API 呼び出し</h1>
-            <p>バケット名や画像名はml-test-image-bucket，image.jpegであると仮定します．</p>
-            <form onSubmit={handleSubmit} style={{ marginBottom: "20px" }}>
-                <div style={{ marginBottom: "10px" }}>
-                    <label htmlFor="bucket" style={{ marginRight: "10px" }}>
-                        Bucket:
-                    </label>
-                    <input
-                        id="bucket"
-                        type="text"
-                        value={bucket}
-                        onChange={(e) => setBucket(e.target.value)}
-                        placeholder="ml-test-image-bucket"
-                        style={{ padding: "5px", width: "250px" }}
-                    />
-                </div>
-                <div style={{ marginBottom: "10px" }}>
-                    <label htmlFor="imageKey" style={{ marginRight: "10px" }}>
-                        Image Key:
-                    </label>
-                    <input
-                        id="imageKey"
-                        type="text"
-                        value={imageKey}
-                        onChange={(e) => setImageKey(e.target.value)}
-                        placeholder="image.jpeg"
-                        style={{ padding: "5px", width: "250px" }}
-                    />
-                </div>
-                <button type="submit" style={{ padding: "8px 16px" }}>
-                    {loading ? "送信中..." : "Analyze"}
-                </button>
-            </form>
+            <h1>画像解析の実行</h1>
+            <p>アップロード済みの画像（{imageKey}）を対象に解析を実行します。</p>
+            <button onClick={handleStart} style={{ padding: "8px 16px", fontSize: "16px" }}>
+                {loading ? "送信中..." : "Start"}
+            </button>
 
             {error && (
                 <div style={{ color: "red", marginTop: "10px" }}>
@@ -267,6 +236,13 @@ const AnalyzePage: React.FC = () => {
             )}
         </div>
     );
-};
+}
 
-export default AnalyzePage;
+// AnalyzePageContent を Suspense でラップしてエラー回避
+export default function AnalyzePage() {
+    return (
+        <Suspense fallback={<div>ページを読み込み中...</div>}>
+            <AnalyzePageContent />
+        </Suspense>
+    );
+}
