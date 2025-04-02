@@ -21,7 +21,7 @@ docker compose up --build
 .
 ├── Dockerfile
 ├── README.md
-├── main.py
+├── app.py
 └── requirements.txt // Pythonバックエンドの依存関係
 ```
 ## requirements.txt
