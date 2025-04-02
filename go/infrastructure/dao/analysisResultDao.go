@@ -13,7 +13,7 @@ type analysisResultDao struct {
 }
 
 // NewAnalysisResultDao は GORM を用いたリポジトリ実装のインスタンスを返す
-func NewAnalysisResultDao(db *gorm.DB) repository.AnalysisRepository {
+func NewAnalysisResultDao(db *gorm.DB) repository.AnalysisResult {
 	return &analysisResultDao{db: db}
 }
 

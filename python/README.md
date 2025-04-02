@@ -6,7 +6,7 @@
 仮想環境を起動していること前提です。
 ```bash
 pip install --no-cache-dir -r requirements.txt
-python3 main.py
+python3 app.py
 ```
 他のフロントエンドやGoAPIやインフラと共に実行する場合は以下のコマンドを実行してください。
 ```bash

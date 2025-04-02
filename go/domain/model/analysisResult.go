@@ -2,21 +2,12 @@ package model
 
 import "time"
 
-// AnalysisResult は 1 つの顔の解析結果を表す
-// 同じ S3 リクエストから複数顔が検出された場合，各顔ごとにレコードを作成し，同一の Bucket, ImageKey で紐付ける．
+// AnalysisResult は 1 つの顔の解析結果を表します。
+// 同じ画像から複数顔が検出された場合、各顔ごとにレコードを作成します。
 type AnalysisResult struct {
 	ID              int64             `json:"id" gorm:"primaryKey;autoIncrement"`
-	Bucket          string            `json:"bucket"`
-	ImageKey        string            `json:"image_key"`
-	DominantEmotion string            `json:"dominant_emotion"`
+	FileName        string            `json:"file_name"`        // 画像ファイル名を保存する
+	DominantEmotion string            `json:"dominant_emotion"` // 解析結果から決定された主要な感情
 	CreatedAt       time.Time         `json:"created_at"`
 	Emotions        []AnalysisEmotion `json:"emotions" gorm:"foreignKey:ResultID"`
-}
-
-// AnalysisEmotion は 1 つの解析結果内の各感情とスコアを表す
-type AnalysisEmotion struct {
-	ID       int64   `json:"id" gorm:"primaryKey;autoIncrement"`
-	ResultID int64   `json:"result_id" gorm:"index"` // AnalysisResult の ID を外部キーとして紐付け
-	Emotion  string  `json:"emotion"`
-	Score    float64 `json:"score"`
 }

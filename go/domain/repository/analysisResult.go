@@ -2,8 +2,8 @@ package repository
 
 import "mltest/domain/model"
 
-// AnalysisRepository は解析結果の永続化のためのリポジトリインターフェースです.
-type AnalysisRepository interface {
+// 解析結果の保存や取得のためのインターフェース
+type AnalysisResult interface {
 	Save(result *model.AnalysisResult) error
 	GetAll() ([]*model.AnalysisResult, error)
 }

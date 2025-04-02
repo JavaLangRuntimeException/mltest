@@ -27,6 +27,7 @@ func main() {
 
 	// ユースケース初期化 (PYTHON_SERVICE_URL は Python サービスの URL、例: http://localhost:8080)
 	analysisUC := usecase.NewAnalysisUsecase(analysisRepo, os.Getenv("PYTHON_SERVICE_URL"))
+	detectUC := usecase.NewDetectUsecase(os.Getenv("PYTHON_SERVICE_URL"))
 
 	// Echo インスタンスを生成
 	e := echo.New()
@@ -38,15 +39,16 @@ func main() {
 	}))
 
 	// ハンドラ初期化
-	newHandler := handler.NewHandler(analysisUC)
+	analysisHandler := handler.NewAnalysisHandler(analysisUC)
+	detectHandler := handler.NewDetectHandler(detectUC)
 
 	// ルーティング設定
 	e.GET("/health", func(c echo.Context) error {
 		return c.String(http.StatusOK, "OK")
 	})
-	e.POST("/analyze", newHandler.HandleAnalyze)
-	e.GET("/results", newHandler.HandleGetResults)
-	e.POST("/detect", newHandler.HandleDetectLogo)
+	e.POST("/analyze", analysisHandler.HandleAnalyze)
+	e.GET("/results", analysisHandler.HandleGetResults)
+	e.POST("/detect", detectHandler.HandleDetectLogo)
 
 	// サーバ設定 (タイムアウトなど)
 	e.Server.ReadTimeout = 10 * time.Second

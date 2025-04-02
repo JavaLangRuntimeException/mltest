@@ -4,8 +4,9 @@
 ## リクエストJSON例
 ```json
 {
-  "bucket": "example-bucket",
-  "image_key": "image.jpg"
+   "file_name": "example.jpg",
+   "content_type": "image/jpeg",
+   "image_data": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/…"
 }
 ```
 
@@ -18,7 +19,8 @@
     "emotions": {
       "happy": 0.95,
       "sad": 0.02,
-      "neutral": 0.03
+      "neutral": 0.03,
+      ...
     }
   }
 }

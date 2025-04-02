@@ -1,62 +1,95 @@
 "use client";
 
-import { useState, ChangeEvent, FormEvent } from "react";
+import React, { useState, ChangeEvent, FormEvent } from "react";
+import { useAtom } from "jotai";
 import { useRouter } from "next/navigation";
+import { analysisAtom, APIResponse } from "@/atoms/analysisAtom";
 
-export default function HomePage() {
-  const [file, setFile] = useState<File | null>(null);
-  const [message, setMessage] = useState("");
-  const router = useRouter();
+const UploadImagePage: React.FC = () => {
+    const [file, setFile] = useState<File | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+    const router = useRouter();
+    const [, setAnalysisResult] = useAtom(analysisAtom);
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-    }
-  };
+    const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setFile(e.target.files[0]);
+        }
+    };
 
-  /**
-   * imageファイルアップロード処理
-   * aws s3 に image をアップロードします．
-   * ローカル環境の場合，awslocal s3 mb s3://ml-test-image-bucket でバケットを作成してから実行してください
-   */
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!file) {
-      alert("ファイルを選択してください");
-      return;
-    }
+    const handleUpload = async (e: FormEvent) => {
+        e.preventDefault();
+        if (!file) {
+            alert("ファイルを選択してください");
+            return;
+        }
+        // FileReader でファイルを Base64 エンコード
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = async () => {
+            const base64Data = reader.result as string;
+            setLoading(true);
+            setError(null);
 
-    const formData = new FormData();
-    formData.append("file", file);
+            try {
+                const response = await fetch("/api/analyze", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        file_name: file.name,
+                        content_type: file.type,
+                        image_data: base64Data,
+                    }),
+                });
 
-    const res = await fetch("/api/uploadImage", {
-      method: "POST",
-      body: formData,
-    });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    setError(
+                        `API エラー: ${errorData.error || "Unknown error"} (ステータス: ${response.status})`
+                    );
+                } else {
+                    const json: APIResponse = await response.json();
+                    // 解析結果を atom にセットして解析ページへ遷移
+                    setAnalysisResult(json);
+                    router.push("/analyze");
+                }
+            } catch (err: unknown) {
+                if (err instanceof Error) {
+                    setError("通信エラー: " + err.message);
+                } else {
+                    setError("通信エラー: Unknown error");
+                }
+            } finally {
+                setLoading(false);
+            }
+        };
+    };
 
-    const data = await res.json();
+    return (
+        <main style={{ padding: "2rem", fontFamily: "sans-serif" }}>
+            <h1>画像アップロード</h1>
+            <p>画像ファイルを選択してアップロードしてください。</p>
+            <form onSubmit={handleUpload}>
+                <input type="file" onChange={handleFileChange} accept="image/*" />
+                <button
+                    type="submit"
+                    style={{
+                        marginLeft: "10px",
+                        padding: "8px 16px",
+                        fontSize: "16px",
+                    }}
+                >
+                    {loading ? "送信中..." : "アップロード"}
+                </button>
+            </form>
+            {error && (
+                <div style={{ color: "red", marginTop: "10px" }}>
+                    <strong>Error:</strong> {error}
+                </div>
+            )}
+        </main>
+    );
+};
 
-    if (res.ok) {
-      setMessage("アップロード成功: " + JSON.stringify(data));
-      // 画像アップロード成功後，ファイル名をクエリパラメータとして/analyzeへ遷移する
-      router.push(`/analyze?image=${encodeURIComponent(file.name)}`);
-    } else {
-      setMessage("アップロード失敗: " + JSON.stringify(data));
-    }
-  };
-
-  return (
-      <main style={{ padding: "2rem" }}>
-        <h1>S3 image Upload</h1>
-        <p>画像アップロードページです．解析する画像を選んでください。</p>
-        <p>
-          ローカル環境の場合は、awslocal s3 mb s3://ml-test-image-bucket でバケットを作成してからアップロードしてください
-        </p>
-        <form onSubmit={handleSubmit}>
-          <input type="file" onChange={handleFileChange} />
-          <button type="submit">アップロード</button>
-        </form>
-        {message && <p>{message}</p>}
-      </main>
-  );
-}
+export default UploadImagePage;

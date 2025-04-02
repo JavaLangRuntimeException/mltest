@@ -1,8 +1,7 @@
 -- 解析結果（試行ごとの基本情報）
 CREATE TABLE analysis_results (
                                   id INT AUTO_INCREMENT PRIMARY KEY,
-                                  bucket VARCHAR(255) NOT NULL,
-                                  image_key VARCHAR(255) NOT NULL,
+                                  file_name VARCHAR(255) NOT NULL,
                                   dominant_emotion VARCHAR(50) NOT NULL,
                                   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
