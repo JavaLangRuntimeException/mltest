@@ -8,19 +8,17 @@ import (
 	"mltest/usecase"
 )
 
-// AnalysisHandler は、画像解析依頼、結果取得などを処理するハンドラーです。
 type AnalysisHandler struct {
 	analysisUsecase *usecase.AnalysisUsecase
 }
 
-// NewAnalysisHandler は AnalysisHandler のコンストラクタです。
 func NewAnalysisHandler(au *usecase.AnalysisUsecase) *AnalysisHandler {
 	return &AnalysisHandler{
 		analysisUsecase: au,
 	}
 }
 
-// HandleAnalyze は POST リクエストで画像解析依頼を処理します。
+// POST リクエストで画像解析依頼を処理する
 func (h *AnalysisHandler) HandleAnalyze(c echo.Context) error {
 	var req usecase.Base64ImageRequest
 	if err := c.Bind(&req); err != nil {
@@ -41,7 +39,7 @@ func (h *AnalysisHandler) HandleAnalyze(c echo.Context) error {
 	return c.JSON(http.StatusOK, result)
 }
 
-// HandleGetResults は GET リクエストで保存済み解析結果を返却します。
+// GET リクエストで保存済み解析結果を返却する
 func (h *AnalysisHandler) HandleGetResults(c echo.Context) error {
 	results, err := h.analysisUsecase.GetAnalysisResults()
 	if err != nil {

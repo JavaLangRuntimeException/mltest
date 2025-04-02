@@ -8,24 +8,21 @@ import (
 	"net/http"
 )
 
-// DetectResult は、Python サービスの /detectエンドポイントから返却されるロゴ検出結果です。
 type DetectResult struct {
 	LogoDetected bool `json:"logo_detected"`
 }
 
-// DetectUsecase は、ロゴ検出に関する処理を提供するユースケースです。
 type DetectUsecase struct {
 	pythonServiceURL string
 }
 
-// NewDetectUsecase は DetectUsecase のコンストラクタです。
 func NewDetectUsecase(pythonServiceURL string) *DetectUsecase {
 	return &DetectUsecase{
 		pythonServiceURL: pythonServiceURL,
 	}
 }
 
-// DetectLogo は、与えられた画像データを Python サービスへ送信し、ロゴ検出結果を取得します。
+// 与えられた画像データを Python サービスへ送信し，ロゴ検出結果を取得する
 func (du *DetectUsecase) DetectLogo(image string) (DetectResult, error) {
 	payload, err := json.Marshal(map[string]string{"image": image})
 	if err != nil {

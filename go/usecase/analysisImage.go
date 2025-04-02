@@ -11,32 +11,32 @@ import (
 	"mltest/domain/repository"
 )
 
-// Base64ImageRequest は、Base64 エンコード済みの画像データを受け取るリクエスト形式です。
+// Base64 エンコード済みの画像データを受け取るリクエスト形式
 type Base64ImageRequest struct {
 	FileName    string `json:"file_name"`
 	ContentType string `json:"content_type"`
 	ImageData   string `json:"image_data"`
 }
 
-// PythonAnalysis は、Python サービスから返却される解析結果です。
+// Python サービスから返却される解析結果
+// DominantEmotionが想定される表情
+// Emotionsが表情の根拠
 type PythonAnalysis struct {
 	DominantEmotion string             `json:"dominant_emotion"`
 	Emotions        map[string]float64 `json:"emotions"`
 }
 
-// AnalysisResult は、選択された商品情報と解析結果をまとめるための型です。
+// 選択された商品情報と解析結果をまとめるための型
 type AnalysisResult struct {
 	SelectedProduct string          `json:"selected_product"`
 	Analysis        *PythonAnalysis `json:"analysis"`
 }
 
-// AnalysisUsecase は、画像解析と解析結果の永続化を行うユースケースです。
 type AnalysisUsecase struct {
 	repo             repository.AnalysisResult
 	pythonServiceURL string
 }
 
-// NewAnalysisUsecase は AnalysisUsecase のコンストラクタです。
 func NewAnalysisUsecase(repo repository.AnalysisResult, pythonServiceURL string) *AnalysisUsecase {
 	return &AnalysisUsecase{
 		repo:             repo,
@@ -44,7 +44,7 @@ func NewAnalysisUsecase(repo repository.AnalysisResult, pythonServiceURL string)
 	}
 }
 
-// AnalyzeImage は、Base64エンコードされた画像データを Python サービスへ送り、解析結果を取得します。
+// Base64エンコードされた画像データを Python サービスへ送り，解析結果を取得する
 func (uc *AnalysisUsecase) AnalyzeImage(req *Base64ImageRequest) (AnalysisResult, error) {
 	payload, err := json.Marshal(req)
 	if err != nil {
@@ -67,6 +67,7 @@ func (uc *AnalysisUsecase) AnalyzeImage(req *Base64ImageRequest) (AnalysisResult
 		return AnalysisResult{}, err
 	}
 
+	// TODO: (BEGO-1) Pythonからの結果からSelectedProduct(= フロントで表示するfbxファイル名)を設定する
 	result := AnalysisResult{
 		SelectedProduct: "product1", // 必要に応じて変更
 		Analysis:        &analysis,
@@ -74,8 +75,8 @@ func (uc *AnalysisUsecase) AnalyzeImage(req *Base64ImageRequest) (AnalysisResult
 	return result, nil
 }
 
-// SaveAnalysisResult は、画像ファイル名と Python サービスからの解析結果を
-// ドメインモデル（AnalysisResult, AnalysisEmotion）としてデータベースへ保存します。
+// 画像ファイル名と Python サービスからの解析結果を
+// ドメインモデル（AnalysisResult, AnalysisEmotion）としてデータベースへ保存する
 func (uc *AnalysisUsecase) SaveAnalysisResult(fileName string, analysis PythonAnalysis) error {
 	result := &model.AnalysisResult{
 		FileName:        fileName,
@@ -92,7 +93,7 @@ func (uc *AnalysisUsecase) SaveAnalysisResult(fileName string, analysis PythonAn
 	return uc.repo.Save(result)
 }
 
-// GetAnalysisResults は、保存されている解析結果一覧を取得します。
+// 保存されている解析結果一覧を取得
 func (uc *AnalysisUsecase) GetAnalysisResults() ([]*model.AnalysisResult, error) {
 	return uc.repo.GetAll()
 }

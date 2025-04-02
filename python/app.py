@@ -55,7 +55,7 @@ def get_red_contours(image):
 # ロゴ画像はテンプレートマッチング用（グレースケール）と赤色部分の形状比較用（カラー）の両方で使用する
 template_gray = cv2.imread('./logo.png', cv2.IMREAD_GRAYSCALE)
 if template_gray is None:
-    logging.debug("テンプレート画像の読み込みに失敗しました。パスが正しいか確認してください。")
+    logging.debug("テンプレート画像の読み込みに失敗しました。パスが正しいか確認してください")
     exit(1)
 
 template_color = cv2.imread('./logo.png', cv2.IMREAD_COLOR)

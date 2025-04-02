@@ -1,6 +1,6 @@
 package model
 
-// AnalysisEmotion は、1 つの解析結果内の各感情とそのスコアを表します。
+// 1 つの解析結果内の各感情とそのスコアを表す
 type AnalysisEmotion struct {
 	ID       int64   `json:"id" gorm:"primaryKey;autoIncrement"`
 	ResultID int64   `json:"result_id" gorm:"index"` // AnalysisResult の ID を外部キーとして紐付け

@@ -7,19 +7,17 @@ import (
 	"mltest/usecase"
 )
 
-// DetectHandler は、ロゴ検出のエンドポイント処理を提供するハンドラーです。
 type DetectHandler struct {
 	detectUsecase *usecase.DetectUsecase
 }
 
-// NewDetectHandler は DetectHandler のコンストラクタです。
 func NewDetectHandler(du *usecase.DetectUsecase) *DetectHandler {
 	return &DetectHandler{
 		detectUsecase: du,
 	}
 }
 
-// HandleDetectLogo は POST リクエストで、ロゴ検出を処理します。
+// POST リクエストで、ロゴ検出を処理する
 func (h *DetectHandler) HandleDetectLogo(c echo.Context) error {
 	var req struct {
 		Image string `json:"image"`
