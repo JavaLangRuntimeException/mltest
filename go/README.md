@@ -15,35 +15,6 @@ docker composeの初回実行時
 ```bash
 docker compose up --build
 ```
-## ディレクトリ構成
-```
-.
-├── Dockerfile
-├── README.md
-├── domain
-│     ├── model 
-│     │     ├── README.md
-│     │     └── analysisResult.go
-│     └── repository
-│         ├── README.md
-│         └── analysisResult.go
-├── go.mod 
-├── go.sum
-├── infrastructure
-│     ├── dao
-│     │     ├── README.md
-│     │     └── analysisResultDao.go
-│     └── mysql
-│         ├── README.md
-│         └── mysql.go
-├── interface
-│     ├── README.md
-│     └── analysisResult.go
-├── main.go
-└── usecase
-    ├── README.md
-    └── analysisResultUsecase.go
-```
 
 ## main.go
 バックエンドのエントリーポイント．APIのルーティングを記述している．また，Echoでサーバーを立ち上げている．
