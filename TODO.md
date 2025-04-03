@@ -1,0 +1,31 @@
+インフラ(AWS)のやらなくちゃいけないことをまとめます
+- AWS-1 
+  - VPCの作成
+  - サブネットの作成
+  - セキュリティグループの作成
+  - インターネットゲートウェイの作成
+  - NATゲートウェイをパブリックサブネットに作成
+  - ルートテーブルの作成
+  - ルートテーブルの関連付け
+  - S3やECRと接続用のVPCエンドポイントの作成
+- AWS-2
+  - RDSの作成
+  - MySQLのDBインスタンスを作成
+  - DBのセキュリティグループを設定
+- AWS-3
+  - ECRのリポジトリを作成し，Dockerイメージをpushする
+  - PythonAPIのdocker push
+  - GoAPIのdocker push
+- AWS-4
+  - ECSクラスター，ECSサービス(タスク)の作成
+  - Go APIのデプロイ
+  - Python APIのデプロイ
+- AWS-5
+  - フロントエンドホスティング用のS3バケット(バケット名`17-icecream-frontend-bucket`)を作成し，CloudFrontでCDNを設定する
+- AWS-6
+  - 3Dモデル格納用のS3のバケット(バケット名は`17-icecream-3dmodel-bucket`)を作成し，フロントエンドで表示する
+  - S3のバケットポリシーを設定し，フロントエンドからS3にアクセスできるようにする
+- AWS-7
+  - CodePipelineを使ってCD環境の構築
+- AWS-8
+  - Route53やACMの設定
