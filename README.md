@@ -6,6 +6,8 @@
 TypeScript
 Next.js
 Three.js
+React?
+Jotai
 
 ## バックエンド(Go)
 Go
@@ -17,11 +19,23 @@ Python
 Flask
 OpenCV
 DeepFace
+Base64
 
-## インフラ
+## インフラ(ローカル)
 Docker
 localstack(S3)
 MySQL
+
+## インフラ(AWS)
+ECS(Fargate)
+ECR(Docker)
+RDS(MySQL)
+S3
+CloudFront
+Route53
+ACM
+CodePipeline
+
 
 ## ディレクトリ構成
 ```
@@ -39,7 +53,7 @@ MySQL
 - **go/:** 
 DBへのCRUD操作やPythonAPIを叩くロジック(Goのバックエンド)のディレクトリ
 - **python/:**
-顔認識や表情分析ロジック(Pythonのバックエンド)のディレクトリ
+顔認識や表情分析ロジックやロゴ認識(Pythonのバックエンド)のディレクトリ
 - **sql/:**
 MySQLのDDLを格納しているディレクトリ
 
@@ -104,7 +118,5 @@ http://localhost:3000/ にアクセスして開始してください．
 
 ## 注意点
 - DBに格納するだけでDBのデータは活用できていないのでデータ活用は考えたい
-- S3に画像データを格納してどのように活用するのか．今のところ1回の試行でしか利用できていない
 - フロントエンドのデザインがシンプルすぎるので，デザインを考えたい
 - 3Dモデルは表示しているのみなので，3Dモデルを活用する方法を考えたい
-- 初めにロゴを読み込むロジックを作成する必要がある
