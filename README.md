@@ -115,6 +115,16 @@ http://localhost:3000/uploadProduct にアクセスして3Dモデル(mltest/3dmo
 http://localhost:3000/ にアクセスして開始してください．
 (またはロゴ認識画面をスキップして http://localhost:3000/uploadImage にアクセスしてください)
 
+## タスク番号とブランチ管理
+| 技術領域             | 略号          |
+|------------------|-------------|
+| Frontend         | FE          |
+| Backend (Go)     | BEGO        |
+| Backend (Python) | BEPY        |
+| 3DModeling       | MOD         |
+| Infrastructure   | AWS         |
+
+FE-1のタスクをする際はブランチ名を `feature/FE-1` としてほしいです．PRを作成する際はbaseをdevelopにしてください．また，必ず誰かのレビューを受けるようにお願いします
 
 ## 注意点
 - DBに格納するだけでDBのデータは活用できていないのでデータ活用は考えたい
