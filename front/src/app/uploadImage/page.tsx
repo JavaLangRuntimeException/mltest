@@ -28,7 +28,8 @@ const UploadImagePage: React.FC = () => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onloadend = async () => {
-            const base64Data = reader.result as string;
+            const base64 = reader.result as string;
+            const base64Data = base64.includes(",") ? base64.split(",")[1] : base64;
             setLoading(true);
             setError(null);
 

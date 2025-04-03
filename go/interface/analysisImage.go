@@ -25,7 +25,7 @@ func (h *AnalysisHandler) HandleAnalyze(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "リクエスト解析失敗"})
 	}
 
-	result, err := h.analysisUsecase.AnalyzeImage(&req)
+	result, err := h.analysisUsecase.AnalyzeImage(&req.ImageData)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "解析失敗: " + err.Error()})
 	}

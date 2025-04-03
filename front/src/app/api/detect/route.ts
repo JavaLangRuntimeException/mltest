@@ -2,10 +2,10 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
     try {
-        // フロント側から送信された JSON ボディを取得（例: { image: ... }）
+        // フロント側から送信された JSON ボディを取得（例: { image_data: ... }）
         const body = await request.json();
-        const { image } = body;
-        if (!image) {
+        const { image_data } = body;
+        if (!image_data) {
             return NextResponse.json({ error: 'Image data is required' }, { status: 400 });
         }
 
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
         const response = await fetch(goServiceURL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ image }),
+            body: JSON.stringify({ image_data }),
         });
 
         // Go サービスからのレスポンスをそのまま返却

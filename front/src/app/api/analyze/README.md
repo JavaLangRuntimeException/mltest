@@ -7,7 +7,7 @@
 {
    "file_name": "example.jpg",
    "content_type": "image/jpeg",
-   "image_data": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/…"
+   "image_data": "/9j/4AAQSkZJRgABAQEASABIAAD/…"
 }
 ```
 

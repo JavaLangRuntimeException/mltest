@@ -23,8 +23,8 @@ func NewDetectUsecase(pythonServiceURL string) *DetectUsecase {
 }
 
 // 与えられた画像データを Python サービスへ送信し，ロゴ検出結果を取得する
-func (du *DetectUsecase) DetectLogo(image string) (DetectResult, error) {
-	payload, err := json.Marshal(map[string]string{"image": image})
+func (du *DetectUsecase) DetectLogo(imageData string) (DetectResult, error) {
+	payload, err := json.Marshal(map[string]string{"image_data": imageData})
 	if err != nil {
 		return DetectResult{}, err
 	}

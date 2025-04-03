@@ -45,8 +45,11 @@ func NewAnalysisUsecase(repo repository.AnalysisResult, pythonServiceURL string)
 }
 
 // Base64エンコードされた画像データを Python サービスへ送り，解析結果を取得する
-func (uc *AnalysisUsecase) AnalyzeImage(req *Base64ImageRequest) (AnalysisResult, error) {
-	payload, err := json.Marshal(req)
+func (uc *AnalysisUsecase) AnalyzeImage(req *string) (AnalysisResult, error) {
+	// 単なる文字列 req を {"image_data": "リクエストの文字列"} の形にラップする
+	payload, err := json.Marshal(map[string]string{
+		"image_data": *req,
+	})
 	if err != nil {
 		return AnalysisResult{}, err
 	}
@@ -68,6 +71,7 @@ func (uc *AnalysisUsecase) AnalyzeImage(req *Base64ImageRequest) (AnalysisResult
 	}
 
 	// TODO: (BEGO-1) Pythonからの結果からSelectedProduct(= フロントで表示するfbxファイル名)を設定する
+	// ここでは仮に "product1" を選択
 	result := AnalysisResult{
 		SelectedProduct: "product1", // 必要に応じて変更
 		Analysis:        &analysis,

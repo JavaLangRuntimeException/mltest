@@ -15,11 +15,13 @@ export default function LogoDetectionPage() {
             // すでに検出済みの場合、これ以上 API コールしない
             if (detected) return;
 
+            const base64Data = base64.includes(",") ? base64.split(",")[1] : base64;
+
             try {
                 const response = await fetch("/api/detect", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ image: base64 }),
+                    body: JSON.stringify({ image_data: base64Data }),
                 });
                 const result = await response.json();
                 console.log("API 結果:", result);

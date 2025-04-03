@@ -4,7 +4,7 @@
 ## リクエストJSON例
 ```json
 {
-  "image": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/..."
+  "image_data": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/..."
 }
 ```
 
