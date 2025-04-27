@@ -5,6 +5,30 @@ import { useAtom } from "jotai";
 import { analysisAtom } from "@/atoms/analysisAtom";
 import ModelViewer from "../../components/ModelViewer";
 
+
+// 位置情報を取得する関数
+function getLocation(): Promise<GeolocationCoordinates> {
+    return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+            reject(new Error("Geolocation is not supported by this browser."));
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            (position: GeolocationPosition) => {
+                // 成功時の処理
+                const { latitude, longitude } = position.coords;
+                console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
+                resolve(position.coords);
+            },
+            (error: GeolocationPositionError) => {
+                // エラー時の処理
+                console.error('Error obtaining location:', error);
+                reject(error);
+            }
+        );
+    });
+}
 const AnalyzePage: React.FC = () => {
     const [analysisResult] = useAtom(analysisAtom);
 
@@ -15,6 +39,16 @@ const AnalyzePage: React.FC = () => {
             </main>
         );
     }
+    // TODO: (ZONO)位置情報を取得する
+    console.log(getLocation())
+
+    // getLocation()
+    // .then((coords) => {
+    //     console.log(`取得した位置情報: 緯度 ${coords.latitude}, 経度 ${coords.longitude}`);
+    // })
+    // .catch((error) => {
+    //     console.error('位置情報の取得に失敗しました:', error);
+    // });
 
     return (
         <main style={{ padding: "2rem", fontFamily: "sans-serif" }}>
