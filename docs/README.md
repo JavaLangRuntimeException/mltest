@@ -11,5 +11,5 @@
     - [シーケンス図](./architecture/sequence_diagrams.md)
     - [ER図とDBスキーマ](./architecture/er_diagram.md)
 - [API仕様](./api/api_spec.md)
-- [task分割](./task/task.md)
+- [task分割](./task/README.md)
 - 

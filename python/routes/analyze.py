@@ -119,6 +119,8 @@ def analyze_image():
             avg_emotions = {}
             final_dominant_emotion = ""
 
+        # Todo: ここにProductを選択する仕組みを追加する
+
         # 最終的な解析結果を辞書形式でまとめる
         final_result = {
             "dominant_emotion": final_dominant_emotion,

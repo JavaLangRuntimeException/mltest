@@ -30,15 +30,9 @@ erDiagram
     float fear
     float disgust
 }
-
-"regions" {
-    bigint id PK
-    string name
-}
  
 "emotions" 1 --1 "logs" : "1--1"
 "products" 1 -- zero or more "logs" : "1--n"
-"regions" 1 -- zero or more "logs" : "1--n"
 ```
 
 
