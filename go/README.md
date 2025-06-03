@@ -12,7 +12,7 @@
 | レイヤ    | Python連携部分（API通信・データ構造整備）、LogoRecognitionUsecase     |
 | 梶原くん   | EmotionAnalysisUsecase実装（セッション/DB/GoogleAPI/レスポンス構築） |
 | zawaくん | GetARIceUsecase実装（DB集計/セッション制御/レスポンス構築）              |
-| ちょり    | 共通基盤（Repository層、Model定義、ユニットテスト、モック）                |
+| ちょり    | 共通基盤（ユニットテスト、モック）                                    |
 
 ## 実行方法
 GoAPIのみ実行する方法
